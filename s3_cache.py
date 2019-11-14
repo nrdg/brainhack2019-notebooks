@@ -1,8 +1,10 @@
+import os
 from functools import partial
 import s3fs
 from allensdk.api.caching_utilities import one_file_call_caching
 from allensdk.brain_observatory.ecephys.ecephys_project_cache import EcephysProjectCache, read_nwb
 from allensdk.brain_observatory.ecephys.ecephys_session import EcephysSession
+from allensdk.config.manifest import Manifest
 
 
 class S3Cache(EcephysProjectCache):
@@ -30,6 +32,7 @@ class S3Cache(EcephysProjectCache):
             session_api = self._build_nwb_api_for_session(_path, session_id, filter_by_validity, **unit_filter_kwargs)
             return EcephysSession(api=session_api, test=True)
         
+        Manifest.safe_make_parent_dirs(path)
         return one_file_call_caching(
             path,
             partial(self.s3fs.get, self._get_s3_path(path), path),
